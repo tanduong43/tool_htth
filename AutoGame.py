@@ -776,21 +776,7 @@ class QuickButtonsPanel:
             b.stop()
         self.buttons.clear()
 
-    # def _do_send_single_key(self, iid, vk, down, key_obj):
-    #     """Hàm ép gửi phím vào 1 tab cụ thể để chơi tay độc lập"""
-    #     scan = win32api.MapVirtualKey(vk, 0)
-    #     lp   = (scan << 16) | 1
-    #     if key_obj in [Key.up, Key.down, Key.left, Key.right]:
-    #         lp |= (1 << 24)
-    #     msg = win32con.WM_KEYDOWN if down else win32con.WM_KEYUP
-    #     if not down:
-    #         lp |= (1 << 30) | (1 << 31)
-            
-    #     d = self.manager.running_instances.get(iid)
-    #     hwnd = d.get("hwnd") if d else None
-    #     if hwnd:
-    #         try: win32api.PostMessage(hwnd, msg, vk, lp)
-    #         except Exception: pass
+
 # =========================
 # MAIN APP
 # =========================
@@ -1430,21 +1416,20 @@ class TapGameManager:
         def on_key(k, down):
             ctx = _get_active_context()
             if ctx is None: return  # Nếu đang lướt Chrome/Zalo bên ngoài thì phớt lờ
-
+            
             vk = self.get_vk(k)
             if not vk: return
 
-            if ctx == 1:
-                # CHỈ G1 Master mới có quyền điều khiển đồng bộ phím cho các taq khác
-                # Luôn gửi phím cho chính G1 trước
-                self.broadcaster.submit(self._do_send_single_key, 1, vk, down, k)
-                # Nếu bật Link Phim -> broadcast sang các taq còn lại
+            if ctx == "tool" or ctx == 1:
+                # Nếu đang ở Master (G1) -> CÓ BẬT đồng bộ thì ném phím đi tất cả
                 if self.is_master_key_running:
                     self.broadcaster.submit(self._do_broadcast_key, vk, down, k)
-            elif ctx not in ("tool", None):
-                # G2, G3... -> Ép gửi phím vào đúng tab đó để chơi tay độc lập
+                elif ctx == 1:
+                    # Nếu KHÔNG BẬT đồng bộ, vẫn ép gửi phím cho chính G1 để chơi tay
+                    self.broadcaster.submit(self._do_send_single_key, 1, vk, down, k)
+            else:
+                # Nếu đang ở G2, G3... -> Ép gửi phím vào đúng tab đó để chơi tay độc lập!
                 self.broadcaster.submit(self._do_send_single_key, ctx, vk, down, k)
-            # ctx == "tool": đang gõ vào UI của tool → bỏ qua
 
         self.mouse_listener = mouse.Listener(on_click=on_click, on_scroll=on_scroll)
         self.mouse_listener.start()
@@ -1539,6 +1524,21 @@ class TapGameManager:
                 except Exception: pass
             if delay > 0:
                 time.sleep(delay)
+    def _do_send_single_key(self, iid, vk, down, key_obj):
+        """Hàm ép gửi phím vào 1 tab cụ thể để chơi tay độc lập"""
+        scan = win32api.MapVirtualKey(vk, 0)
+        lp   = (scan << 16) | 1
+        if key_obj in [Key.up, Key.down, Key.left, Key.right]:
+            lp |= (1 << 24)
+        msg = win32con.WM_KEYDOWN if down else win32con.WM_KEYUP
+        if not down:
+            lp |= (1 << 30) | (1 << 31)
+            
+        d = self.running_instances.get(iid)
+        hwnd = d.get("hwnd") if d else None
+        if hwnd:
+            try: win32api.PostMessage(hwnd, msg, vk, lp)
+            except Exception: pass
 
     def get_vk(self, key):
         if hasattr(key, "vk"): return key.vk
@@ -1549,20 +1549,6 @@ class TapGameManager:
         if key in specials: return specials[key]
         if hasattr(key, "char") and key.char: return ord(key.char.upper())
         return None
-    def _do_send_single_key(self, iid, vk, down, key_obj):
-        """Gửi phím vào 1 tab cụ thể để chơi tay độc lập"""
-        scan = win32api.MapVirtualKey(vk, 0)
-        lp   = (scan << 16) | 1
-        if key_obj in [Key.up, Key.down, Key.left, Key.right]:
-            lp |= (1 << 24)
-        msg = win32con.WM_KEYDOWN if down else win32con.WM_KEYUP
-        if not down:
-            lp |= (1 << 30) | (1 << 31)
-        d    = self.running_instances.get(iid)
-        hwnd = d.get("hwnd") if d else None
-        if hwnd:
-            try: win32api.PostMessage(hwnd, msg, vk, lp)
-            except Exception: pass
 
 if __name__ == "__main__":
     root = tk.Tk()
