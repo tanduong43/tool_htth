@@ -1327,12 +1327,34 @@ class TapGameManager:
         self.update_close_range_ui()
 
     def stop_all_instances(self):
-        for iid in list(self.running_instances.keys()):
-            self.close_one_instance(iid)
-        self.running_instances.clear()
-        self.embedded_hwnds.clear()
-        self.instance_counter = 0
-        self.update_close_range_ui()
+        """Đóng từng taq từ G cao nhất → G thấp nhất, chạy trong thread nền."""
+        ids = sorted(self.running_instances.keys(), reverse=True)
+        if not ids:
+            return
+
+        def _worker():
+            for iid in ids:
+                if iid in self.running_instances:
+                    self.root.after(0, lambda i=iid: self._update_wrapper_label(i, "Dang dong...", "orange"))
+                    self.close_one_instance(iid)
+            # Sau khi đóng hết, dọn dẹp state
+            def _finish():
+                self.running_instances.clear()
+                self.embedded_hwnds.clear()
+                self.instance_counter = 0
+                self.update_close_range_ui()
+            self.root.after(0, _finish)
+
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _update_wrapper_label(self, iid, text, color):
+        """Cập nhật label status của taq trên UI thread."""
+        data = self.running_instances.get(iid)
+        if data:
+            try:
+                data["status_label"].config(text=text, fg=color)
+            except Exception:
+                pass
 
     def on_closing(self):
         if messagebox.askokcancel("Thoat", "Dong tool va tat het game?"):
@@ -1414,6 +1436,15 @@ class TapGameManager:
                 self.broadcaster.submit(self._do_broadcast_scroll, rel[0], rel[1], dy)
 
         def on_key(k, down):
+             # ===== F3 = Bat autoclick, F4 = Tat autoclick (global hotkey) =====
+            if down:
+                if k == Key.f3:
+                    self.root.after(0, self.quick_panel.start_all)
+                    return
+                if k == Key.f4:
+                    self.root.after(0, self.quick_panel.stop_all)
+                    return
+            # ===================================================================
             ctx = _get_active_context()
             if ctx is None: return  # Nếu đang lướt Chrome/Zalo bên ngoài thì phớt lờ
             
