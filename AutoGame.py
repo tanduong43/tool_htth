@@ -50,14 +50,7 @@ except ImportError:
     PYNPUT_AVAILABLE = False
     print("Loi: pip install pynput")
 
-# --- IMPORT PYDIRECTINPUT (Hardware Mouse) ---
-try:
-    import pydirectinput
-    pydirectinput.PAUSE = 0.01  # Giảm độ trễ
-    DIRECTINPUT_AVAILABLE = True
-except ImportError:
-    DIRECTINPUT_AVAILABLE = False
-    print("Loi: pip install pydirectinput")
+
 
 
 # =========================
@@ -332,13 +325,7 @@ class ScrollableFrame(ttk.Frame):
         self.hsb.set(first, last)
 
 
-# =========================
-# CLICK MODE MAP
-# =========================
-CLICK_MODES = {
-    "SendInput    (Win32 API - Hardware)": "input",
-    "DirectInput  (Gia lap chuot that)":   "direct",
-}
+
 
 
 # =========================
@@ -549,13 +536,10 @@ class QuickButtonItem:
             y = int(self.y_var.get())
         except ValueError:
             return
-        
-        mode = self.manager.click_mode
 
         for iid in targets:
             d    = self.manager.running_instances.get(iid)
             hwnd = d.get("hwnd") if d else None
-            container = d.get("container") if d else None
             
             if not hwnd:
                 continue
@@ -564,26 +548,7 @@ class QuickButtonItem:
                 send_key_enter(hwnd)
             else:
                 btn_str = "left" if btn_type == "Trai" else "right"
-                
-                if mode == "direct":
-                    if container and DIRECTINPUT_AVAILABLE:
-                        try:
-                            # 1. Focus cửa sổ chứa game lên
-                            win32gui.SetForegroundWindow(self.manager.root.winfo_id())
-                            # 2. Tính tọa độ tuyệt đối trên toàn bộ màn hình
-                            abs_x = container.winfo_rootx() + x
-                            abs_y = container.winfo_rooty() + y
-                            # 3. Kéo chuột thật tới đó và click
-                            pydirectinput.moveTo(abs_x, abs_y)
-                            if btn_str == "left":
-                                pydirectinput.click()
-                            else:
-                                pydirectinput.rightClick()
-                        except Exception as e:
-                            print(f"[DirectInput] Loi: {e}")
-                else:
-                    # mode == "input"
-                    send_click_sendinput(hwnd, x, y, btn_str)
+                send_click_sendinput(hwnd, x, y, btn_str)
 
     def _set_status(self, text, color="gray"):
         try:
@@ -813,7 +778,7 @@ class QuickButtonsPanel:
 class TapGameManager:
     def __init__(self, root):
         self.root = root
-        self.root.title("Auto Game V20 - DirectInput + SendInput Only")
+        self.root.title("Nguyễn Tấn Dương Tool V25")
         self.root.geometry("1680x920")
         self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -833,7 +798,7 @@ class TapGameManager:
         self.is_master_key_running    = False
         self.last_lclick_time         = 0
         self.last_rclick_time         = 0
-        self.click_mode               = "input"
+
         self._master_bounds           = None
 
         self.broadcaster = BroadcastWorker()
@@ -992,17 +957,7 @@ class TapGameManager:
         ttk.Spinbox(fd, from_=0, to=500, increment=10,
                     textvariable=self.sync_delay_var, width=6).pack(side=tk.LEFT, padx=4)
 
-        ttk.Separator(g4, orient="horizontal").pack(fill=tk.X, pady=6)
-        ttk.Label(g4, text="Phuong thuc click:", font=("Arial",9,"bold")).pack(anchor="w")
 
-        self.click_mode_var = tk.StringVar(value=list(CLICK_MODES.keys())[0])
-        for label in CLICK_MODES:
-            ttk.Radiobutton(g4, text=label, variable=self.click_mode_var, value=label,
-                            command=self.on_click_mode_changed).pack(anchor="w", pady=1)
-
-    def on_click_mode_changed(self):
-        label = self.click_mode_var.get()
-        self.click_mode = CLICK_MODES.get(label, "input")
 
     # ==========================================================
     # RANGE
@@ -1212,12 +1167,13 @@ class TapGameManager:
             }
             self.rearrange_layout()
             self.update_close_range_ui()
-            self.embed(iid, cont, proc, title_hint, w, h)
+            return proc, cont  # Trả về để embed() được gọi bên ngoài
         except Exception as e:
             try: wrapper.destroy()
             except Exception: pass
             self.instance_counter -= 1
             messagebox.showerror("Loi khoi dong", str(e))
+            return None, None
 
     # ==========================================================
     # FIND / EMBED
@@ -1252,7 +1208,7 @@ class TapGameManager:
         except Exception: pass
         return pid_title or pid_only or title_only
 
-    def embed(self, inst_id, container, proc, title_hint, w, h):
+    def embed(self, inst_id, container, proc, title_hint, w, h, done_event=None):
         def worker():
             data = self.running_instances.get(inst_id)
             if not data: return
@@ -1263,7 +1219,17 @@ class TapGameManager:
                 hwnd = self.find_window(proc.pid, title_hint)
                 if hwnd: break
                 time.sleep(0.1)
-            self.root.after(0, lambda: self.finalize(inst_id, hwnd, container, w, h))
+
+            # Chờ finalize xong rồi mới signal done
+            done_flag = threading.Event()
+            def _do_finalize():
+                self.finalize(inst_id, hwnd, container, w, h)
+                done_flag.set()
+            self.root.after(0, _do_finalize)
+            done_flag.wait(timeout=10)  # Đợi finalize trên UI thread tối đa 10s
+
+            if done_event:
+                done_event.set()  # Báo hiệu cho taq tiếp theo được mở
         threading.Thread(target=worker, daemon=True).start()
 
     def finalize(self, inst_id, hwnd, container, w, h):
@@ -1323,8 +1289,59 @@ class TapGameManager:
         fp = self.current_file_path
         def run():
             for _ in range(qty):
-                self.root.after(0, lambda f=fp: self.launch_one_game(f, w, h, title_hint))
-                time.sleep(2.0)
+                done_event = threading.Event()
+                # launch_one_game phải chạy trên UI thread
+                result = {"proc": None, "cont": None, "iid": None}
+                ui_done = threading.Event()
+
+                def _launch(f=fp, ev=done_event, res=result, ui_ev=ui_done):
+                    self.instance_counter += 1
+                    iid = self.instance_counter
+                    res["iid"] = iid
+
+                    wrapper = ttk.LabelFrame(self.game_grid, text=f"G{iid}")
+                    wrapper.grid(row=999, column=999)
+                    ctrl = ttk.Frame(wrapper); ctrl.pack(fill=tk.X)
+                    sync = tk.BooleanVar(value=True)
+                    if iid != 1:
+                        ttk.Checkbutton(ctrl, variable=sync, text="Link").pack(side=tk.LEFT)
+                    else:
+                        tk.Label(ctrl, text="(Main)", fg="red", font=("Arial",9,"bold")).pack(side=tk.LEFT)
+                    lbl = tk.Label(ctrl, text="...", fg="orange"); lbl.pack(side=tk.RIGHT)
+                    cont = tk.Frame(wrapper, width=w, height=h, bg="black")
+                    cont.pack_propagate(False)
+                    cont.pack()
+
+                    try:
+                        proc = self.launch_direct_file(f)
+                        self.running_instances[iid] = {
+                            "process": proc, "wrapper": wrapper, "container": cont,
+                            "status_label": lbl, "sync_var": sync,
+                            "hwnd": None, "filepath": f,
+                            "win_w": w, "win_h": h,
+                        }
+                        self.rearrange_layout()
+                        self.update_close_range_ui()
+                        res["proc"] = proc
+                        res["cont"] = cont
+                    except Exception as e:
+                        try: wrapper.destroy()
+                        except Exception: pass
+                        self.instance_counter -= 1
+                        messagebox.showerror("Loi khoi dong", str(e))
+                    ui_ev.set()
+
+                self.root.after(0, _launch)
+                ui_done.wait()  # Đợi UI thread tạo xong taq
+
+                proc = result["proc"]
+                cont = result["cont"]
+                iid  = result["iid"]
+                if proc and cont:
+                    # Embed và chờ nhúng xong trước khi mở taq tiếp
+                    self.embed(iid, cont, proc, title_hint, w, h, done_event)
+                    done_event.wait(timeout=65)  # Tối đa 65s chờ nhúng
+
         threading.Thread(target=run, daemon=True).start()
 
     def close_one_instance(self, iid):
@@ -1505,40 +1522,21 @@ class TapGameManager:
         except Exception: return 0.0
 
     def _do_broadcast_mouse(self, x, y, btn_type="left"):
-        mode  = self.click_mode
         delay = self._get_taq_delay()
 
-        # ==========================================
-        # 1. LƯU LẠI TỌA ĐỘ VÀ CỬA SỔ HIỆN TẠI
-        # ==========================================
+        # Lưu lại tọa độ và cửa sổ hiện tại
         orig_x, orig_y = win32api.GetCursorPos()
         current_hwnd = win32gui.GetForegroundWindow()
 
-        # ==========================================
-        # 2. NÉM CHUỘT ĐI CLICK CÁC TAB CON
-        # ==========================================
+        # Gửi click SendInput sang các taq con
         for iid, d in list(self.running_instances.items()):
             if iid == 1 or not d["sync_var"].get(): continue
             hwnd = d.get("hwnd")
-            container = d.get("container")
             if not hwnd: continue
-            
             try:
-                if mode == "direct" and container and DIRECTINPUT_AVAILABLE:
-                    win32gui.SetForegroundWindow(self.root.winfo_id())
-                    abs_x = container.winfo_rootx() + x
-                    abs_y = container.winfo_rooty() + y
-                    pydirectinput.moveTo(abs_x, abs_y)
-                    if btn_type == "left":
-                        pydirectinput.click()
-                    else:
-                        pydirectinput.rightClick()
-                else:
-                    # mode == "input"
-                    send_click_sendinput(hwnd, x, y, btn_type)
+                send_click_sendinput(hwnd, x, y, btn_type)
             except Exception as e:
                 print(f"[ERR] G{iid}: {e}")
-                
             if delay > 0:
                 time.sleep(delay)
 
