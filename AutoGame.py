@@ -683,17 +683,34 @@ class QuickButtonsPanel:
         MID   = "#34495e"
         LIGHT = "#ecf0f1"
 
-        self.outer = tk.Frame(parent, width=235, bg=DARK)
+        self._collapsed = False
+        self._full_width = 235
+
+        self.outer = tk.Frame(parent, width=self._full_width, bg=DARK)
         self.outer.pack(side=tk.LEFT, fill=tk.Y)
         self.outer.pack_propagate(False)
 
-        hdr = tk.Frame(self.outer, bg=DARK)
+        hdr = tk.Frame(self.outer, bg=DARK, cursor="hand2")
         hdr.pack(fill=tk.X)
+
+        self._toggle_btn = tk.Label(
+            hdr, text="◀", bg=DARK, fg="#f1c40f",
+            font=("Arial", 10, "bold"), cursor="hand2", padx=4
+        )
+        self._toggle_btn.pack(side=tk.RIGHT, pady=4)
+        self._toggle_btn.bind("<Button-1>", lambda e: self.toggle_collapse())
+
         tk.Label(hdr, text="⚡ QUICK AUTO CLICK",
                  bg=DARK, fg="#f1c40f",
-                 font=("Arial", 9, "bold")).pack(pady=6)
+                 font=("Arial", 9, "bold")).pack(side=tk.LEFT, pady=6, padx=4)
 
-        bar = tk.Frame(self.outer, bg=MID)
+        # Click header cũng toggle
+        hdr.bind("<Button-1>", lambda e: self.toggle_collapse())
+
+        self._body = tk.Frame(self.outer, bg=DARK)
+        self._body.pack(fill=tk.BOTH, expand=True)
+
+        bar = tk.Frame(self._body, bg=MID)
         bar.pack(fill=tk.X)
 
         btn_cfg = dict(font=("Arial",9,"bold"), relief="flat", bd=0, pady=3, padx=6)
@@ -712,7 +729,7 @@ class QuickButtonsPanel:
                                    font=("Arial",7))
         self.lbl_count.pack(side=tk.RIGHT, padx=6)
 
-        scroll_wrap = tk.Frame(self.outer, bg=LIGHT)
+        scroll_wrap = tk.Frame(self._body, bg=LIGHT)
         scroll_wrap.pack(fill=tk.BOTH, expand=True)
 
         self._canvas = tk.Canvas(scroll_wrap, bg=LIGHT, highlightthickness=0)
@@ -732,6 +749,19 @@ class QuickButtonsPanel:
             widget.bind("<MouseWheel>", self._on_wheel)
 
         self.add_button()
+
+    def toggle_collapse(self):
+        self._collapsed = not self._collapsed
+        if self._collapsed:
+            self._body.pack_forget()
+            self.outer.config(width=28)
+            self._toggle_btn.config(text="▶")
+        else:
+            self._body.pack(fill=tk.BOTH, expand=True)
+            self.outer.config(width=self._full_width)
+            self._toggle_btn.config(text="◀")
+
+
 
     def _on_inner_cfg(self, e):
         self._canvas.configure(scrollregion=self._canvas.bbox("all"))
@@ -921,10 +951,10 @@ class TapGameManager:
         fs = ttk.Frame(g2); fs.pack(fill=tk.X)
         ttk.Label(fs, text="Rong:").pack(side=tk.LEFT)
         self.width_entry = ttk.Entry(fs, width=6)
-        self.width_entry.insert(0, "320"); self.width_entry.pack(side=tk.LEFT, padx=4)
+        self.width_entry.insert(0, "291"); self.width_entry.pack(side=tk.LEFT, padx=4)
         ttk.Label(fs, text="Cao:").pack(side=tk.LEFT)
         self.height_entry = ttk.Entry(fs, width=6)
-        self.height_entry.insert(0, "450"); self.height_entry.pack(side=tk.LEFT, padx=4)
+        self.height_entry.insert(0, "400"); self.height_entry.pack(side=tk.LEFT, padx=4)
 
         ttk.Button(sp, text="CHAY NGAY", command=self.start_game_instances).pack(fill=tk.X, pady=(8,2))
         ttk.Button(sp, text="DONG HET",  command=self.stop_all_instances).pack(fill=tk.X)
@@ -1526,17 +1556,32 @@ class TapGameManager:
             pass
 
     def _do_broadcast_scroll(self, x, y, dy):
+        """Đồng bộ scroll sang tất cả taq con.
+        x, y: tọa độ relative trong container của master (G1).
+        dy  : delta từ pynput (+1 lên, -1 xuống).
+        """
         delta = int(dy * 120)
-        lp    = win32api.MAKELONG(x, y)
+        wParam = win32api.MAKELONG(0, delta & 0xFFFF)
+        delay  = self._get_taq_delay()
+
         for iid, d in list(self.running_instances.items()):
-            if iid == 1 or not d["sync_var"].get(): continue
-            hwnd = d.get("hwnd")
-            if not hwnd: continue
+            if iid == 1 or not d["sync_var"].get():
+                continue
+            hwnd      = d.get("hwnd")
+            container = d.get("container")
+            if not hwnd or not container:
+                continue
             try:
-                win32gui.PostMessage(hwnd, win32con.WM_MOUSEWHEEL,
-                                     win32api.MAKELONG(0, delta), lp)
+                # Chuyển tọa độ local → screen của từng taq
+                screen_x = container.winfo_rootx() + x
+                screen_y = container.winfo_rooty() + y
+                lParam   = win32api.MAKELONG(screen_x & 0xFFFF, screen_y & 0xFFFF)
+                win32api.PostMessage(hwnd, win32con.WM_MOUSEWHEEL, wParam, lParam)
             except Exception as e:
-                print(f"[Scroll] {e}")
+                print(f"[Scroll G{iid}] {e}")
+            if delay > 0:
+                time.sleep(delay)
+
 
     def _do_broadcast_key(self, vk, down, key_obj):
         scan = win32api.MapVirtualKey(vk, 0)
