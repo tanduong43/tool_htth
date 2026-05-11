@@ -1,0 +1,134 @@
+2026-05-09 20:43:01,714 - INFO - =========================================
+2026-05-09 20:43:01,714 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 20:43:22,226 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_v129_b365_21_10_2025.jar
+2026-05-09 20:43:22,226 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 20:43:22,246 - INFO - Da goi CMD khoi chay MicroEmulator. PID (shell): 25772
+2026-05-09 20:43:22,306 - INFO - [G1] Bat dau tim window... PID: None, TitleHint: AngelChip
+2026-05-09 20:44:23,564 - WARNING - [G1] Timeout 60s! Khong tim thay window nao khop voi PID hoac Title: AngelChip
+2026-05-09 20:47:07,609 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_v129_b365_21_10_2025.jar
+2026-05-09 20:47:07,613 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 20:47:07,619 - INFO - Da goi CMD khoi chay MicroEmulator. PID (shell): 29156
+2026-05-09 20:47:07,661 - INFO - [G2] Bat dau tim window... PID: None, TitleHint: AngelChip
+2026-05-09 20:47:09,611 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_v129_b365_21_10_2025.jar
+2026-05-09 20:47:09,611 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 20:47:09,617 - INFO - Da goi CMD khoi chay MicroEmulator. PID (shell): 6600
+2026-05-09 20:47:09,664 - INFO - [G3] Bat dau tim window... PID: None, TitleHint: AngelChip
+2026-05-09 20:47:11,615 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_v129_b365_21_10_2025.jar
+2026-05-09 20:47:11,615 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 20:47:11,621 - INFO - Da goi CMD khoi chay MicroEmulator. PID (shell): 21932
+2026-05-09 20:47:11,709 - INFO - [G4] Bat dau tim window... PID: None, TitleHint: AngelChip
+2026-05-09 21:07:37,044 - INFO - =========================================
+2026-05-09 21:07:37,044 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 21:07:49,453 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_v129_b365_21_10_2025.jar
+2026-05-09 21:07:49,453 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 21:07:49,472 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 29468
+2026-05-09 21:07:49,496 - INFO - [G1] Bat dau tim window... PID: 29468, TitleHint: AngelChip
+2026-05-09 21:07:50,413 - INFO - [G1] Da tim thay HWND: 920412 (lan thu 9)
+2026-05-09 21:07:50,413 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 920412
+2026-05-09 21:34:12,103 - INFO - =========================================
+2026-05-09 21:34:12,104 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 21:34:26,757 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\build.bat
+2026-05-09 21:34:26,954 - INFO - Da khoi chay chuong trinh thanh cong voi PID: 21380
+2026-05-09 21:34:26,988 - INFO - [G1] Bat dau tim window... PID: 21380, TitleHint: AngelChip
+2026-05-09 21:34:27,405 - INFO - [G1] Da tim thay HWND: 1640882 (lan thu 4)
+2026-05-09 21:34:27,405 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 1640882
+2026-05-09 21:34:28,762 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\build.bat
+2026-05-09 21:34:28,834 - INFO - Da khoi chay chuong trinh thanh cong voi PID: 23956
+2026-05-09 21:34:28,908 - INFO - [G2] Bat dau tim window... PID: 23956, TitleHint: AngelChip
+2026-05-09 21:34:29,217 - INFO - [G2] Da tim thay HWND: 2165782 (lan thu 3)
+2026-05-09 21:34:29,218 - INFO - [G2] Tien hanh Embed (nhung) Window HWND: 2165782
+2026-05-09 21:44:10,011 - INFO - =========================================
+2026-05-09 21:44:10,012 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 21:44:23,366 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 21:44:23,366 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 21:44:23,385 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 25268
+2026-05-09 21:44:23,408 - INFO - [G1] Bat dau tim window... PID: 25268, TitleHint: AngelChip
+2026-05-09 21:44:24,333 - INFO - [G1] Da tim thay HWND: 1379492 (lan thu 9)
+2026-05-09 21:44:24,334 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 1379492
+2026-05-09 21:44:25,369 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 21:44:25,369 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 21:44:25,384 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 25316
+2026-05-09 21:44:25,432 - INFO - [G2] Bat dau tim window... PID: 25316, TitleHint: AngelChip
+2026-05-09 21:44:26,263 - INFO - [G2] Da tim thay HWND: 1051832 (lan thu 8)
+2026-05-09 21:44:26,263 - INFO - [G2] Tien hanh Embed (nhung) Window HWND: 1051832
+2026-05-09 21:46:21,844 - INFO - =========================================
+2026-05-09 21:46:21,845 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 21:46:30,160 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 21:46:30,161 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 21:46:30,180 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 4812
+2026-05-09 21:46:30,211 - INFO - [G1] Bat dau tim window... PID: 4812, TitleHint: AngelChip
+2026-05-09 21:46:31,132 - INFO - [G1] Da tim thay HWND: 1051656 (lan thu 9)
+2026-05-09 21:46:31,136 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 1051656
+2026-05-09 21:46:32,164 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 21:46:32,165 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 21:46:32,178 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 21860
+2026-05-09 21:46:32,220 - INFO - [G2] Bat dau tim window... PID: 21860, TitleHint: AngelChip
+2026-05-09 21:46:33,039 - INFO - [G2] Da tim thay HWND: 3473674 (lan thu 8)
+2026-05-09 21:46:33,040 - INFO - [G2] Tien hanh Embed (nhung) Window HWND: 3473674
+2026-05-09 21:53:24,757 - INFO - =========================================
+2026-05-09 21:53:24,757 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 21:53:41,783 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 21:53:41,783 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 21:53:41,803 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 26700
+2026-05-09 21:53:41,825 - INFO - [G1] Bat dau tim window... PID: 26700, TitleHint: AngelChip
+2026-05-09 21:53:42,746 - INFO - [G1] Da tim thay HWND: 1509782 (lan thu 9)
+2026-05-09 21:53:42,749 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 1509782
+2026-05-09 21:53:43,786 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 21:53:43,786 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 21:53:43,800 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 16980
+2026-05-09 21:53:43,848 - INFO - [G2] Bat dau tim window... PID: 16980, TitleHint: AngelChip
+2026-05-09 21:53:44,672 - INFO - [G2] Da tim thay HWND: 1379354 (lan thu 8)
+2026-05-09 21:53:44,673 - INFO - [G2] Tien hanh Embed (nhung) Window HWND: 1379354
+2026-05-09 22:04:17,647 - INFO - =========================================
+2026-05-09 22:04:17,647 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 22:04:28,490 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 22:04:28,491 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 22:04:28,509 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 19992
+2026-05-09 22:04:28,539 - INFO - [G1] Bat dau tim window... PID: 19992, TitleHint: AngelChip
+2026-05-09 22:04:29,459 - INFO - [G1] Da tim thay HWND: 4000224 (lan thu 9)
+2026-05-09 22:04:29,460 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 4000224
+2026-05-09 22:04:34,487 - INFO - Auto-Login [G1]: Click Start MicroEmulator...
+2026-05-09 22:04:34,621 - INFO - Auto-Login [G1]: Cho 8 giay de game tai xong...
+2026-05-09 22:04:42,624 - INFO - Auto-Login [G1]: Bat dau nhap tai khoan mat khau...
+2026-05-09 22:09:46,594 - INFO - =========================================
+2026-05-09 22:09:46,594 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 22:09:56,996 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 22:09:56,996 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 22:09:57,015 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 11164
+2026-05-09 22:09:57,045 - INFO - [G1] Bat dau tim window... PID: 11164, TitleHint: AngelChip
+2026-05-09 22:09:57,974 - INFO - [G1] Da tim thay HWND: 4197446 (lan thu 9)
+2026-05-09 22:09:57,975 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 4197446
+2026-05-09 22:10:02,993 - INFO - Auto-Login [G1]: Double-Click vao danh sach Game de Start...
+2026-05-09 22:10:03,975 - INFO - Auto-Login [G1]: Cho 8 giay de game tai xong...
+2026-05-09 22:10:11,978 - INFO - Auto-Login [G1]: Bat dau nhap tai khoan mat khau...
+2026-05-09 22:10:27,951 - INFO - =========================================
+2026-05-09 22:10:27,951 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 22:10:46,692 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 22:10:46,692 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 22:10:46,711 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 28524
+2026-05-09 22:10:46,744 - INFO - [G1] Bat dau tim window... PID: 28524, TitleHint: AngelChip
+2026-05-09 22:10:47,673 - INFO - [G1] Da tim thay HWND: 4262982 (lan thu 9)
+2026-05-09 22:10:47,675 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 4262982
+2026-05-09 22:10:52,690 - INFO - Auto-Login [G1]: Double-Click vao danh sach Game de Start...
+2026-05-09 22:10:53,677 - INFO - Auto-Login [G1]: Cho 8 giay de game tai xong...
+2026-05-09 22:11:01,681 - INFO - Auto-Login [G1]: Bat dau nhap tai khoan mat khau...
+2026-05-09 22:22:57,516 - INFO - =========================================
+2026-05-09 22:22:57,516 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 22:23:12,987 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 22:23:12,987 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 22:23:13,006 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 8964
+2026-05-09 22:23:13,031 - INFO - [G1] Bat dau tim window... PID: 8964, TitleHint: AngelChip
+2026-05-09 22:23:13,955 - INFO - [G1] Da tim thay HWND: 4196832 (lan thu 9)
+2026-05-09 22:23:13,956 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 4196832
+2026-05-09 22:23:18,985 - INFO - Auto-Login [G1]: Bam Start game...
+2026-05-09 22:31:25,517 - INFO - =========================================
+2026-05-09 22:31:25,517 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 22:31:39,599 - INFO - =========================================
+2026-05-09 22:31:39,599 - INFO - AutoGame Tool Khoi Dong
+2026-05-09 22:31:51,667 - INFO - Yeu cau khoi chay: E:\VSC\tool_htth\HaiTacTiHon_Modded_API.jar
+2026-05-09 22:31:51,667 - INFO - Phat hien game J2ME. Goi qua MicroEmulator: E:\VSC\tool_htth\microemulator-2.0.4\microemulator-2.0.4\microemulator.jar
+2026-05-09 22:31:51,687 - INFO - Da goi java.exe khoi chay MicroEmulator. PID (java): 26684
+2026-05-09 22:31:51,720 - INFO - [G1] Bat dau tim window... PID: 26684, TitleHint: AngelChip
+2026-05-09 22:31:52,651 - INFO - [G1] Da tim thay HWND: 1903186 (lan thu 9)
+2026-05-09 22:31:52,652 - INFO - [G1] Tien hanh Embed (nhung) Window HWND: 1903186
+2026-05-09 22:31:57,664 - INFO - Auto-Login [G1]: Bam Start game...

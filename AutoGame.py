@@ -11,6 +11,17 @@ import ctypes.wintypes
 import shutil
 import queue
 import datetime
+import json
+import logging
+
+logging.basicConfig(
+    filename='tool_htth.log',
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    encoding='utf-8'
+)
+logging.info("=========================================")
+logging.info("AutoGame Tool Khoi Dong")
 
 # --- CẤU HÌNH DPI ---
 try:
@@ -367,7 +378,7 @@ class QuickButtonItem:
                                  font=("Arial", 8, "bold"))
         self.lbl_idx.pack(side=tk.LEFT, padx=4, pady=2)
 
-        self.lbl_status = tk.Label(hdr, text="Cho", fg="#aad4ff",
+        self.lbl_status = tk.Label(hdr, text="Chờ", fg="#aad4ff",
                                     bg="#3a5f8a", font=("Arial", 7))
         self.lbl_status.pack(side=tk.RIGHT, padx=6, pady=2)
 
@@ -391,10 +402,10 @@ class QuickButtonItem:
         )
         self.pick_btn.pack(side=tk.LEFT, padx=(1,4))
 
-        tk.Label(row1, text="Loai:", bg=BG, font=("Arial",8)).pack(side=tk.LEFT)
-        self.btn_var = tk.StringVar(value="Trai")
+        tk.Label(row1, text="Loại:", bg=BG, font=("Arial",8)).pack(side=tk.LEFT)
+        self.btn_var = tk.StringVar(value="Trái")
         ttk.Combobox(row1, textvariable=self.btn_var,
-                     values=["Trai", "Phai", "Enter"],
+                     values=["Trái", "Phải", "Enter"],
                      state="readonly", width=6,
                      font=("Arial",8)).pack(side=tk.LEFT, padx=(1,0))
 
@@ -406,7 +417,7 @@ class QuickButtonItem:
         tk.Entry(row2, textvariable=self.interval_var, width=5, justify="center",
                  font=("Arial",8)).pack(side=tk.LEFT, padx=(1,4))
 
-        tk.Label(row2, text="Lap:", bg=BG, font=("Arial",8)).pack(side=tk.LEFT)
+        tk.Label(row2, text="Lặp:", bg=BG, font=("Arial",8)).pack(side=tk.LEFT)
         self.count_var = tk.StringVar(value="0")
         tk.Entry(row2, textvariable=self.count_var, width=4, justify="center",
                  font=("Arial",8)).pack(side=tk.LEFT, padx=(1,2))
@@ -415,7 +426,7 @@ class QuickButtonItem:
         row3 = tk.Frame(self.frame, bg=BG)
         row3.pack(fill=tk.X, padx=4, pady=1)
 
-        tk.Label(row3, text="Gui den:", bg=BG, font=("Arial",8)).pack(side=tk.LEFT)
+        tk.Label(row3, text="Gửi đến:", bg=BG, font=("Arial",8)).pack(side=tk.LEFT)
         self.target_var = tk.StringVar(value="all")
         self.target_combo = ttk.Combobox(
             row3, textvariable=self.target_var,
@@ -430,14 +441,14 @@ class QuickButtonItem:
         row4.pack(fill=tk.X, padx=4, pady=(2,5))
 
         self.btn_start = tk.Button(
-            row4, text="▶ Bat dau", bg="#27ae60", fg="white",
+            row4, text="▶ Bắt đầu", bg="#27ae60", fg="white",
             font=("Arial",8,"bold"), relief="flat", padx=4,
             command=self.start
         )
         self.btn_start.pack(side=tk.LEFT, padx=(0,3))
 
         self.btn_stop = tk.Button(
-            row4, text="⏹ Dung", bg="#c0392b", fg="white",
+            row4, text="⏹ Dừng", bg="#c0392b", fg="white",
             font=("Arial",8,"bold"), relief="flat", padx=4,
             state="disabled", command=self.stop
         )
@@ -445,7 +456,7 @@ class QuickButtonItem:
 
     def set_index(self, idx):
         self.idx = idx
-        self.lbl_idx.config(text=f" Nut #{idx} ")
+        self.lbl_idx.config(text=f" Nút #{idx} ")
 
     def _refresh_targets_cb(self):
         ids     = sorted(self.manager.running_instances.keys())
@@ -479,7 +490,7 @@ class QuickButtonItem:
         self._picking = True
         try:
             self.pick_btn.config(bg="#c0392b", text="🔒")
-            self.lbl_status.config(text="Re chuot → F2 khoa", fg="#e67e22")
+            self.lbl_status.config(text="Rê chuột → F2 khóa", fg="#e67e22")
         except Exception:
             pass
         self._pick_poll()
@@ -703,12 +714,12 @@ class QuickButtonsPanel:
         tk.Button(bar, text=" − ", bg="#e74c3c", fg="white",
                   command=self.remove_last, **btn_cfg).pack(side=tk.LEFT, padx=2, pady=2)
 
-        tk.Button(bar, text="▶ Tat ca", bg="#2980b9", fg="white",
+        tk.Button(bar, text="▶ Tất cả", bg="#2980b9", fg="white",
                   command=self.start_all, **btn_cfg).pack(side=tk.LEFT, padx=2, pady=2)
-        tk.Button(bar, text="⏹ Dung", bg="#8e44ad", fg="white",
+        tk.Button(bar, text="⏹ Dừng", bg="#8e44ad", fg="white",
                   command=self.stop_all, **btn_cfg).pack(side=tk.LEFT, padx=2, pady=2)
 
-        self.lbl_count = tk.Label(bar, text="0 nut", bg=MID, fg="#bdc3c7",
+        self.lbl_count = tk.Label(bar, text="0 nút", bg=MID, fg="#bdc3c7",
                                    font=("Arial",7))
         self.lbl_count.pack(side=tk.RIGHT, padx=6)
 
@@ -827,6 +838,7 @@ class TapGameManager:
         self._auto_click_thread     = None
 
         self.setup_ui()
+        self.load_accounts()
         self.scan_game_files()
 
         if not PYNPUT_AVAILABLE:
@@ -903,48 +915,54 @@ class TapGameManager:
 
         sp = self.sidebar
 
-        g1 = ttk.LabelFrame(sp, text="1. Chon File Chay", padding=8)
-        g1.pack(fill=tk.X, pady=4)
+        g1 = ttk.LabelFrame(sp, text="1. Chọn File Chạy", padding=8)
+        g1.pack(fill=tk.X, pady=(4, 10))
 
-        ttk.Label(g1, text="File trong thu muc game/:").pack(anchor="w")
+        ttk.Label(g1, text="File trong thư mục game/:").pack(anchor="w")
         self.game_select_var = tk.StringVar()
         self.game_combo = ttk.Combobox(g1, textvariable=self.game_select_var, state="readonly")
         self.game_combo.pack(fill=tk.X, pady=3)
         self.game_combo.bind("<<ComboboxSelected>>", self.on_game_selected)
 
-        bf = ttk.Frame(g1); bf.pack(fill=tk.X, pady=3)
-        ttk.Button(bf, text="Quet lai",    command=self.scan_game_files).pack(side=tk.LEFT, fill=tk.X, expand=True)
-        ttk.Button(bf, text="Chon file...", command=self.browse_game_file).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(4,0))
+        bf = ttk.Frame(g1); bf.pack(fill=tk.X, pady=(5, 3))
+        ttk.Button(bf, text="Quét lại",    command=self.scan_game_files).pack(side=tk.LEFT, fill=tk.X, expand=True)
+        ttk.Button(bf, text="Chọn file...", command=self.browse_game_file).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(4,0))
 
-        self.lbl_info = tk.Label(g1, text="[Chua co file]", fg="blue", wraplength=330, justify="left")
-        self.lbl_info.pack(anchor="w", pady=3)
+        self.lbl_info = tk.Label(g1, text="[Chưa có file]", fg="blue", wraplength=330, justify="left")
+        self.lbl_info.pack(anchor="w", pady=5)
 
         fq = ttk.Frame(g1); fq.pack(fill=tk.X, pady=3)
-        ttk.Label(fq, text="So luong:").pack(side=tk.LEFT)
+        ttk.Label(fq, text="Số lượng:").pack(side=tk.LEFT)
         ttk.Button(fq, text="-", width=3, command=self.decrease_qty).pack(side=tk.LEFT, padx=(4,0))
         self.qty_entry = ttk.Entry(fq, width=5, justify='center')
         self.qty_entry.insert(0, "1"); self.qty_entry.pack(side=tk.LEFT, padx=2)
         ttk.Button(fq, text="+", width=3, command=self.increase_qty).pack(side=tk.LEFT)
 
-        ttk.Label(g1, text="Ten cua so game:").pack(anchor="w", pady=(8,0))
+        ttk.Label(g1, text="Tên cửa sổ game (Để trống tự auto-detect):").pack(anchor="w", pady=(8,2))
         self.title_entry = ttk.Entry(g1)
         self.title_entry.insert(0, "AngelChip"); self.title_entry.pack(fill=tk.X)
 
-        g2 = ttk.LabelFrame(sp, text="2. Kich Thuoc", padding=8)
-        g2.pack(fill=tk.X, pady=4)
+        g2 = ttk.LabelFrame(sp, text="2. Kích Thước", padding=8)
+        g2.pack(fill=tk.X, pady=(0, 10))
         fs = ttk.Frame(g2); fs.pack(fill=tk.X)
-        ttk.Label(fs, text="Rong:").pack(side=tk.LEFT)
+        ttk.Label(fs, text="Rộng:").pack(side=tk.LEFT)
         self.width_entry = ttk.Entry(fs, width=6)
-        self.width_entry.insert(0, "320"); self.width_entry.pack(side=tk.LEFT, padx=4)
+        self.width_entry.insert(0, "260"); self.width_entry.pack(side=tk.LEFT, padx=(4, 15))
         ttk.Label(fs, text="Cao:").pack(side=tk.LEFT)
         self.height_entry = ttk.Entry(fs, width=6)
-        self.height_entry.insert(0, "450"); self.height_entry.pack(side=tk.LEFT, padx=4)
+        self.height_entry.insert(0, "340"); self.height_entry.pack(side=tk.LEFT, padx=(4, 0))
 
-        ttk.Button(sp, text="CHAY NGAY", command=self.start_game_instances).pack(fill=tk.X, pady=(8,2))
-        ttk.Button(sp, text="DONG HET",  command=self.stop_all_instances).pack(fill=tk.X)
+        btn_run = tk.Button(sp, text="CHẠY NGAY", font=("Arial", 10, "bold"), bg="#4CAF50", fg="white", command=self.start_game_instances)
+        btn_run.pack(fill=tk.X, pady=(0, 4), ipady=5)
+        
+        btn_stop = tk.Button(sp, text="ĐÓNG HẾT", font=("Arial", 10, "bold"), bg="#f44336", fg="white", command=self.stop_all_instances)
+        btn_stop.pack(fill=tk.X, pady=(0, 4), ipady=5)
+        
+        btn_acc = tk.Button(sp, text="QUẢN LÝ TÀI KHOẢN", font=("Arial", 10, "bold"), bg="#2196F3", fg="white", command=self.open_account_manager)
+        btn_acc.pack(fill=tk.X, pady=(0, 10), ipady=5)
 
-        g3 = ttk.LabelFrame(sp, text="3. Tat Theo Range", padding=8)
-        g3.pack(fill=tk.X, pady=4)
+        g3 = ttk.LabelFrame(sp, text="3. Tắt Theo Range", padding=8)
+        g3.pack(fill=tk.X, pady=(0, 10))
         rr = ttk.Frame(g3); rr.pack(fill=tk.X, pady=3)
         ttk.Label(rr, text="Tu:").pack(side=tk.LEFT)
         self.close_from_var = tk.StringVar(value="1")
@@ -1046,11 +1064,23 @@ class TapGameManager:
         self.available_games.clear()
         os.makedirs(self.game_dir, exist_ok=True)
         found = []
+        
+        # Quet thu muc goc (base_dir) nhung chi lay file (khong vao thu muc con de tranh lag)
+        try:
+            for name in os.listdir(self.base_dir):
+                fp = os.path.join(self.base_dir, name)
+                if os.path.isfile(fp) and name.lower().endswith((".exe",".jar",".bat",".cmd")):
+                    found.append((f"[Root] {name}", fp))
+        except Exception:
+            pass
+
+        # Quet thu muc game_dir (co the vao thu muc con)
         for rd, _, files in os.walk(self.game_dir):
             for name in files:
                 if name.lower().endswith((".exe",".jar",".bat",".cmd")):
                     fp = os.path.abspath(os.path.join(rd, name))
-                    found.append((os.path.relpath(fp, self.game_dir), fp))
+                    found.append((f"[Game] {os.path.relpath(fp, self.game_dir)}", fp))
+                    
         found.sort(key=lambda x: x[0].lower())
         for rel, fp in found:
             self.available_games[rel.replace("\\", " / ")] = fp
@@ -1163,8 +1193,43 @@ class TapGameManager:
     def launch_direct_file(self, filepath):
         filepath = os.path.abspath(filepath)
         if not os.path.isfile(filepath):
+            logging.error(f"File khong ton tai: {filepath}")
             raise RuntimeError(f"File khong ton tai:\n{filepath}")
+            
+        logging.info(f"Yeu cau khoi chay: {filepath}")
+        
+        # Xử lý riêng cho game J2ME (.jar)
+        if filepath.lower().endswith('.jar'):
+            java_exe = os.path.join(self.base_dir, "jre", "bin", "java.exe")
+            if not os.path.isfile(java_exe):
+                java_exe = "java"
+                
+            microemu_jar = os.path.join(self.base_dir, "microemulator-2.0.4", "microemulator-2.0.4", "microemulator.jar")
+            microemu_resizable = os.path.join(self.base_dir, "microemulator-2.0.4", "microemulator-2.0.4", "devices", "microemu-device-resizable.jar")
+            
+            if os.path.isfile(microemu_jar):
+                logging.info(f"Phat hien game J2ME. Goi qua MicroEmulator: {microemu_jar}")
+                
+                # Cấu hình bỏ khung bàn phím, phóng to game Full màn hình theo size khung trắng
+                if os.path.isfile(microemu_resizable):
+                    cp_arg = f"{microemu_jar};{microemu_resizable}"
+                    cmd = [
+                        java_exe, "-cp", cp_arg, 
+                        "org.microemu.app.Main", 
+                        "--device", "org/microemu/device/resizable/device.xml", 
+                        filepath
+                    ]
+                else:
+                    cmd = [java_exe, "-cp", microemu_jar, "org.microemu.app.Main", filepath]
+                    
+                proc = subprocess.Popen(cmd, shell=False)
+                logging.info(f"Da goi java.exe khoi chay MicroEmulator. PID (java): {proc.pid}")
+                return WinProcWrapper(pid=proc.pid, hprocess=None)
+            else:
+                logging.warning("Khong tim thay microemulator.jar. Se chay jar truc tiep.")
+
         pid, hproc = shell_open_with_pid(filepath, os.path.dirname(filepath))
+        logging.info(f"Da khoi chay chuong trinh thanh cong voi PID: {pid}")
         return WinProcWrapper(pid=pid, hprocess=hproc)
 
     def launch_one_game(self, filepath, w, h, title_hint):
@@ -1242,11 +1307,16 @@ class TapGameManager:
             if not data: return
             self.root.after(0, lambda: data["status_label"].config(text="Tim...", fg="blue"))
             hwnd = None
-            for _ in range(600):
+            logging.info(f"[G{inst_id}] Bat dau tim window... PID: {proc.pid if proc else 'N/A'}, TitleHint: {title_hint}")
+            for i in range(600):
                 if not self.running_instances.get(inst_id): return
-                hwnd = self.find_window(proc.pid, title_hint)
-                if hwnd: break
+                hwnd = self.find_window(proc.pid if proc else None, title_hint)
+                if hwnd: 
+                    logging.info(f"[G{inst_id}] Da tim thay HWND: {hwnd} (lan thu {i})")
+                    break
                 time.sleep(0.1)
+            if not hwnd:
+                logging.warning(f"[G{inst_id}] Timeout 60s! Khong tim thay window nao khop voi PID hoac Title: {title_hint}")
             self.root.after(0, lambda: self.finalize(inst_id, hwnd, container, w, h))
         threading.Thread(target=worker, daemon=True).start()
 
@@ -1256,6 +1326,7 @@ class TapGameManager:
         if not hwnd:
             data["status_label"].config(text="Khong thay window!", fg="red"); return
         try:
+            logging.info(f"[G{inst_id}] Tien hanh Embed (nhung) Window HWND: {hwnd}")
             container.config(width=w, height=h)
             container.pack_propagate(False)
             self.root.update_idletasks()
@@ -1306,9 +1377,23 @@ class TapGameManager:
 
         fp = self.current_file_path
         def run():
-            for _ in range(qty):
+            for i in range(qty):
+                # 1. Yêu cầu giao diện mở game
                 self.root.after(0, lambda f=fp: self.launch_one_game(f, w, h, title_hint))
-                time.sleep(2.0)
+                
+                # 2. Đợi 6 giây cho Game load xong cửa sổ Java
+                time.sleep(6.0)
+                
+                # 3. Lấy thông tin tài khoản theo thứ tự
+                acc = self.accounts[i] if i < len(self.accounts) else None
+                
+                # 4. Chạy quá trình Auto Login cho game vừa mở (Sẽ đợi chạy xong login mới mở tab mới)
+                if acc:
+                    iid = self.instance_counter
+                    self.auto_login_task(iid, acc)
+                
+                # 5. Đợi thêm 1 chút xíu trước khi mở game tiếp theo
+                time.sleep(1.0)
         threading.Thread(target=run, daemon=True).start()
 
     def close_one_instance(self, iid):
@@ -1563,6 +1648,265 @@ class TapGameManager:
         if hwnd:
             try: win32api.PostMessage(hwnd, msg, vk, lp)
             except Exception: pass
+
+    # ==========================================================
+    # ACCOUNT DASHBOARD & AUTO LOGIN
+    # ==========================================================
+    def load_accounts(self):
+        self.accounts = []
+        try:
+            if os.path.isfile("accounts.json"):
+                with open("accounts.json", "r", encoding="utf-8") as f:
+                    self.accounts = json.load(f)
+        except Exception as e:
+            print(f"Loi doc accounts.json: {e}")
+
+    def save_accounts(self):
+        try:
+            with open("accounts.json", "w", encoding="utf-8") as f:
+                json.dump(self.accounts, f, indent=4, ensure_ascii=False)
+        except Exception as e:
+            print(f"Loi luu accounts.json: {e}")
+
+    def open_account_manager(self):
+        self.load_accounts()
+        top = tk.Toplevel(self.root)
+        top.title("Quan Ly Tai Khoan")
+        top.geometry("600x400")
+        top.transient(self.root)
+        top.configure(bg="#222222") # Dark mode
+        
+        lbl_hint = tk.Label(top, text="Click đúp vào dòng để Bật/Tắt Checkbox [ x ]", bg="#222222", fg="#00FF00", font=("Arial", 11, "bold"))
+        lbl_hint.pack(pady=5)
+        
+        # Style cho Treeview
+        style = ttk.Style(top)
+        style.theme_use("clam")
+        style.configure("Treeview", 
+                        background="#333333", 
+                        foreground="white", 
+                        fieldbackground="#333333", 
+                        rowheight=30, 
+                        font=("Arial", 10))
+        style.configure("Treeview.Heading", background="#444444", foreground="white", font=("Arial", 10, "bold"))
+        style.map("Treeview", background=[("selected", "#0055AA")])
+        
+        columns = ("check", "username", "password", "server")
+        tree = ttk.Treeview(top, columns=columns, show="headings", style="Treeview")
+        tree.heading("check", text="Chon")
+        tree.column("check", width=50, anchor=tk.CENTER)
+        tree.heading("username", text="Tai Khoan")
+        tree.heading("password", text="Mat Khau")
+        tree.heading("server", text="Server")
+        tree.pack(fill=tk.BOTH, expand=True, padx=10, pady=5)
+        
+        # Insert data with initial checkbox [ x ]
+        for acc in self.accounts:
+            tree.insert("", tk.END, values=("[ x ]", acc.get("username", ""), "******", acc.get("server", "")), tags=(str(acc.get("server_clicks", 2)),))
+            
+        def toggle_check(event):
+            item = tree.identify_row(event.y)
+            if item:
+                vals = list(tree.item(item, "values"))
+                if vals[0] == "[ x ]":
+                    vals[0] = "[   ]"
+                else:
+                    vals[0] = "[ x ]"
+                tree.item(item, values=vals)
+                
+        tree.bind("<Double-1>", toggle_check)
+            
+        btn_frame = tk.Frame(top, bg="#222222")
+        btn_frame.pack(fill=tk.X, padx=10, pady=(5,10))
+        
+        def _login_all():
+            selected_accs = []
+            for child in tree.get_children():
+                vals = tree.item(child, "values")
+                tags = tree.item(child, "tags")
+                clicks = int(tags[0]) if tags else 2
+                if vals[0] == "[ x ]":
+                    selected_accs.append({
+                        "username": vals[1],
+                        "password": self.get_real_password(vals[1]),
+                        "server": vals[3],
+                        "server_clicks": clicks
+                    })
+            top.destroy()
+            self.auto_login_all(selected_accs)
+            
+        btn_login = tk.Button(btn_frame, text="LOGIN HANG LOAT (Chỉ tab được tick)", bg="#008CBA", fg="white", font=("Arial", 10, "bold"), command=_login_all)
+        btn_login.pack(side=tk.LEFT, ipadx=10, ipady=5)
+        btn_close = tk.Button(btn_frame, text="Dong", bg="#555555", fg="white", font=("Arial", 10), command=top.destroy)
+        btn_close.pack(side=tk.RIGHT, ipadx=10, ipady=5)
+
+    def get_real_password(self, username):
+        for acc in self.accounts:
+            if acc.get("username") == username:
+                return acc.get("password")
+        return ""
+
+    def auto_login_all(self, selected_accs):
+        if not selected_accs:
+            messagebox.showwarning("Thong bao", "Ban chua tick chon tai khoan nao!")
+            return
+            
+        if not self.current_file_path or not os.path.isfile(self.current_file_path):
+            messagebox.showwarning("Loi", "Ban phai chon file game o panel chinh truoc.")
+            return
+
+        self.qty_entry.delete(0, tk.END)
+        self.qty_entry.insert(0, str(len(selected_accs)))
+        
+        fp = self.current_file_path
+        w = int(self.width_entry.get())
+        h = int(self.height_entry.get())
+        title_hint = self.title_entry.get().strip()
+        
+        def run_all_macro():
+            for idx, acc in enumerate(selected_accs):
+                self.root.after(0, lambda f=fp: self.launch_one_game(f, w, h, title_hint))
+                time.sleep(6.0) 
+                iid = self.instance_counter
+                self.auto_login_task(iid, acc)
+                time.sleep(2.0)
+                
+        threading.Thread(target=run_all_macro, daemon=True).start()
+
+    hardware_input_lock = threading.Lock()
+
+    def auto_login_task(self, iid, acc):
+        d = self.running_instances.get(iid)
+        if not d: return
+        hwnd = d.get("hwnd")
+        if not hwnd: return
+        
+        x_tk, y_tk = 160, 140
+        x_mk, y_mk = 160, 215
+        x_sv, y_sv = 160, 305
+        
+        def hw_click(x, y):
+            try:
+                win32gui.SetForegroundWindow(hwnd)
+                time.sleep(0.1)
+            except: pass
+            send_click_sendinput(hwnd, x, y, "left")
+
+        def hw_type(text):
+            try:
+                win32gui.SetForegroundWindow(hwnd)
+                time.sleep(0.1)
+            except: pass
+            for c in text:
+                self.keyboard_controller.press(c)
+                time.sleep(0.01)
+                self.keyboard_controller.release(c)
+                time.sleep(0.05)
+
+        def hw_vk(vk_code, presses=1):
+            try:
+                win32gui.SetForegroundWindow(hwnd)
+                time.sleep(0.1)
+            except: pass
+            
+            key = None
+            if vk_code == 0x0D: key = Key.enter
+            elif vk_code == 0x08: key = Key.backspace
+            elif vk_code == 0x28: key = Key.down
+            elif vk_code == 0x26: key = Key.up
+            elif vk_code == 0x71: key = Key.f2  # F2 = Right Softkey
+            elif vk_code == 0x70: key = Key.f1  # F1 = Left Softkey
+            
+            if not key: return
+            
+            for _ in range(presses):
+                self.keyboard_controller.press(key)
+                time.sleep(0.01)
+                self.keyboard_controller.release(key)
+                time.sleep(0.1)
+
+        w = d.get("win_w", 320)
+        h = d.get("win_h", 450)
+        
+        # Tọa độ tương đối dựa trên tâm màn hình (chuẩn xác cho mọi độ phân giải của game Teamobi)
+        center_x = w // 2
+        center_y = h // 2
+        
+        x_tk, y_tk = center_x, center_y - 85
+        x_mk, y_mk = center_x, center_y - 10
+        x_sv, y_sv = center_x, center_y + 80
+        x_login, y_login = center_x, center_y + 115  # Nằm ngay dưới ô Server, tránh chạm vào nút Resize
+        
+        # --- BƯỚC 1: Chọn MIDlet "Hai tac" và bấm Start ---
+        logging.info(f"Auto-Login [G{iid}]: Bam Start game...")
+        # 1. Click vào danh sách ở trên cùng để Focus (Y=50 là chắc chắn trúng list game)
+        hw_click(center_x, 50)
+        time.sleep(0.3)
+        
+        # 2. Gửi phím Enter để Start game luôn (Không click chuột xuống dưới vì sẽ dính nút Resize)
+        hw_vk(0x0D, 1)
+        time.sleep(0.5)
+        # Gửi thêm phím F2 dự phòng nếu Enter không ăn
+        hw_vk(0x71, 1)
+        
+        # Đợi game tải (khoảng 8 giây cho game J2ME tải dữ liệu)
+        logging.info(f"Auto-Login [G{iid}]: Cho 8 giay de game tai xong...")
+        for i in range(8):
+            time.sleep(1)
+        logging.info(f"Auto-Login [G{iid}]: Bat dau nhap tai khoan mat khau...")
+            
+        with hardware_input_lock:
+            # Click vao Tai Khoan
+            hw_click(x_tk, y_tk)
+            time.sleep(0.5)
+        
+            # Xóa tài khoản cũ (bấm backspace 20 lần)
+            logging.info(f"Auto-Login [G{iid}]: Xoa tai khoan cu...")
+            hw_vk(0x08, 20)
+            
+            # Nhap Tai Khoan
+            logging.info(f"Auto-Login [G{iid}]: Nhap tai khoan: {acc.get('username')}")
+            hw_type(acc.get("username", ""))
+            time.sleep(0.5)
+            
+            # Bam OK (Enter) -> Trong game nay nhập xong thường bấm Enter để xuống
+            hw_vk(0x0D, 1)
+            time.sleep(0.5)
+            
+            # Click vao Mat Khau
+            hw_click(x_mk, y_mk)
+            time.sleep(0.5)
+            
+            # Xoa Mat Khau cu
+            hw_vk(0x08, 20)
+            
+            # Nhap Mat Khau
+            hw_type(acc.get("password", ""))
+            time.sleep(0.5)
+            
+            # Bam OK (Enter)
+            hw_vk(0x0D, 1)
+            time.sleep(0.5)
+            
+            # Click vao Server
+            hw_click(x_sv, y_sv)
+            time.sleep(0.5)
+            
+            # Bam phim Xuong (Arrow Down)
+            clicks = acc.get("server_clicks", 2)
+            # Bấm Lên 5 lần để reset về Server đầu tiên cho chắc ăn
+            hw_vk(0x26, 5)
+            # Bấm Xuống theo cấu hình
+            hw_vk(0x28, clicks)
+            time.sleep(0.5)
+            
+            # Bam Enter de chon Server
+            hw_vk(0x0D, 1)
+            time.sleep(0.5)
+            
+            # Click vao giua man hinh de vao game
+            hw_click(x_login, y_login)
+            logging.info(f"Auto-Login [G{iid}]: Hoan tat quy trinh!")
 
 if __name__ == "__main__":
     root = tk.Tk()
